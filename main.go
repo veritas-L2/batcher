@@ -1,23 +1,10 @@
 package main
 
-// HELLA COPY PASTA COS WHY NOT
-
 import (
-	"fmt"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/hyperledger/fabric-gateway/pkg/client"
 )
-
-/*
-step 1: receive txn
-step 2: forward txn to HLF L2 channel
-step 3: receive response from L2, forward response to client, add txn to batch
-step 4: repeat until batch is complete or timeout
-step 5: publish batch to L1 channel,
-*/
 
 const (
 	mspID        = "Org3MSP"
@@ -30,6 +17,14 @@ const (
 	channelName  = "l2"
 )
 
+/*
+step 1: receive txn
+step 2: forward txn to HLF L2 channel
+step 3: receive response from L2, forward response to client, add txn to batch
+step 4: repeat until batch is complete or timeout
+step 5: publish batch to L1 channel,
+*/
+
 type TransactionInfo struct {
 	ChaincodeName   string   `form:"chaincodeName" json:"chaincodeName" xml:"chaincodeName"  binding:"required"`
 	TransactionName string   `form:"transactionName" json:"transactionName" xml:"transactionName"  binding:"required"`
@@ -37,31 +32,14 @@ type TransactionInfo struct {
 }
 
 func main() {
-	fmt.Println("hello world")
 
-	clientConnection := newGrpcConnection()
-	defer clientConnection.Close()
+	layer2Connection := NewLayer2ConnectionManager()
+	layer1Connection := NewLayer1ConnectionManager()
 
-	id := newIdentity()
-	sign := newSign()
-
-	// Create a Gateway connection for a specific client identity
-	gateway, err := client.Connect(
-		id,
-		client.WithSign(sign),
-		client.WithClientConnection(clientConnection),
-		// Default timeouts for different gRPC calls
-		client.WithEvaluateTimeout(5*time.Second),
-		client.WithEndorseTimeout(15*time.Second),
-		client.WithSubmitTimeout(5*time.Second),
-		client.WithCommitStatusTimeout(1*time.Minute),
-	)
-	if err != nil {
-		panic(err)
-	}
-	defer gateway.Close()
-
-	network := gateway.GetNetwork(channelName)
+	defer layer2Connection.clientConnection.Close()
+	defer layer1Connection.clientConnection.Close()
+	defer layer2Connection.gateway.Close()
+	defer layer1Connection.gateway.Close()
 
 	transactionBuffer := make(chan TransactionInfo)
 
@@ -70,18 +48,14 @@ func main() {
 	router.POST("/executeTransaction", func(c *gin.Context) {
 		var transactionInfo TransactionInfo
 		if c.BindJSON(&transactionInfo) == nil {
-			contract := network.GetContract(transactionInfo.ChaincodeName)
-			result, err := contract.SubmitTransaction(transactionInfo.TransactionName, transactionInfo.Args...)
-			if err != nil {
-				c.JSON(http.StatusOK, gin.H{"error": true, "response": err.Error()})
-			} else {
-				transactionBuffer <- transactionInfo
-				c.JSON(http.StatusOK, gin.H{"error": false, "response": string(result)})
-			}
+			transactionBuffer <- transactionInfo
+			c.JSON(http.StatusOK, gin.H{"response": "transaction submitted"})
 		}
 	})
 
-	go Batcher(transactionBuffer)
+	batcher := NewBatcher(layer1Connection, layer2Connection)
+
+	go batcher.Run(transactionBuffer)
 
 	router.Run()
 }
