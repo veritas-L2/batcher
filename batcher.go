@@ -51,12 +51,14 @@ func (batcher *Batcher) Run(transactionInfoBuffer chan TransactionInfo) {
 			continue
 		}
 		contract := batcher.layer2Connection.network.GetContract(transactionInfo.ChaincodeName)
+		startTime := time.Now()
 		result, err := contract.SubmitTransaction(transactionInfo.TransactionName, transactionInfo.Args...)
 		if err != nil {
 			fmt.Printf("txn failed to execute: %s\n", err.Error())
 			continue
 		} else {
-			fmt.Printf("txn executed successfully. Result: %s\n", result)
+			finishTime := time.Since(startTime)
+			fmt.Printf("txn executed successfully. Took %dms. Result: %s\n", finishTime.Milliseconds(), result)
 		}
 
 		batcher.currentBatch.Transactions = append(batcher.currentBatch.Transactions, transactionInfo)

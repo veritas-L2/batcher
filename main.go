@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -61,6 +63,23 @@ func main() {
 		if c.BindJSON(&transactionInfo) == nil {
 			transactionBuffer <- transactionInfo
 			c.JSON(http.StatusOK, gin.H{"response": "transaction submitted"})
+		}
+	})
+
+	//FOR DEBUGGING PURPOSES ONLY
+	router.POST("/executeL1Transaction", func(c *gin.Context) {
+		var transactionInfo TransactionInfo
+		if c.BindJSON(&transactionInfo) == nil {
+			contract := layer1Connection.network.GetContract(transactionInfo.ChaincodeName)
+			startTime := time.Now()
+			result, err := contract.SubmitTransaction(transactionInfo.TransactionName, transactionInfo.Args...)
+			if err != nil {
+				fmt.Printf("txn failed to execute: %s\n", err.Error())
+			} else {
+				finishTime := time.Since(startTime)
+				fmt.Printf("L1 Txn executed successfully. Took %dms. Result: %s\n", finishTime.Milliseconds(), result)
+			}
+			c.JSON(http.StatusOK, gin.H{"response": "transaction executed"})
 		}
 	})
 
