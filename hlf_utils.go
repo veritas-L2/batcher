@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials"
 )
 
-func newGrpcConnection() *grpc.ClientConn {
+func newGrpcConnection(tlsCertPath string, gatewayPeer string, peerEndpoint string) *grpc.ClientConn {
 	certificate, err := loadCertificate(tlsCertPath)
 	if err != nil {
 		panic(err)
@@ -38,7 +38,7 @@ func loadCertificate(filename string) (*x509.Certificate, error) {
 }
 
 // newIdentity creates a client identity for this Gateway connection using an X.509 certificate.
-func newIdentity() *identity.X509Identity {
+func newIdentity(certPath string, mspID string) *identity.X509Identity {
 	certificate, err := loadCertificate(certPath)
 	if err != nil {
 		panic(err)
@@ -52,7 +52,7 @@ func newIdentity() *identity.X509Identity {
 	return id
 }
 
-func newSign() identity.Sign {
+func newSign(keyPath string) identity.Sign {
 	files, err := ioutil.ReadDir(keyPath)
 	if err != nil {
 		panic(fmt.Errorf("failed to read private key directory: %w", err))

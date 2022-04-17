@@ -7,14 +7,25 @@ import (
 )
 
 const (
-	mspID        = "Org3MSP"
-	cryptoPath   = "/Users/ahsansyed/Desktop/workspace/veritas/fabric-veritas-samples/test-network/organizations/peerOrganizations/org3.example.com"
-	certPath     = cryptoPath + "/users/User1@org3.example.com/msp/signcerts/User1@org3.example.com-cert.pem"
-	keyPath      = cryptoPath + "/users/User1@org3.example.com/msp/keystore"
-	tlsCertPath  = cryptoPath + "/peers/peer0.org3.example.com/tls/ca.crt"
-	peerEndpoint = "localhost:11051"
-	gatewayPeer  = "peer0.org3.example.com"
-	channelName  = "l2"
+	org3MspID        = "Org3MSP"
+	org3CryptoPath   = "/Users/ahsansyed/Desktop/workspace/veritas/fabric-veritas-samples/test-network/organizations/peerOrganizations/org3.example.com"
+	org3CertPath     = org3CryptoPath + "/users/User1@org3.example.com/msp/signcerts/User1@org3.example.com-cert.pem"
+	org3KeyPath      = org3CryptoPath + "/users/User1@org3.example.com/msp/keystore"
+	org3TlsCertPath  = org3CryptoPath + "/peers/peer0.org3.example.com/tls/ca.crt"
+	org3PeerEndpoint = "localhost:11051"
+	org3GatewayPeer  = "peer0.org3.example.com"
+	org3ChannelName  = "l2"
+)
+
+const (
+	org1MspID        = "Org1MSP"
+	org1CryptoPath   = "/Users/ahsansyed/Desktop/workspace/veritas/fabric-veritas-samples/test-network/organizations/peerOrganizations/org1.example.com"
+	org1CertPath     = org1CryptoPath + "/users/User1@org1.example.com/msp/signcerts/User1@org1.example.com-cert.pem"
+	org1KeyPath      = org1CryptoPath + "/users/User1@org1.example.com/msp/keystore"
+	org1TlsCertPath  = org1CryptoPath + "/peers/peer0.org1.example.com/tls/ca.crt"
+	org1PeerEndpoint = "localhost:7051"
+	org1GatewayPeer  = "peer0.org1.example.com"
+	org1ChannelName  = "l1"
 )
 
 /*

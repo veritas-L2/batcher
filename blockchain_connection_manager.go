@@ -14,10 +14,10 @@ type BlockchainConnection struct {
 }
 
 func NewLayer1ConnectionManager() *BlockchainConnection {
-	clientConnection := newGrpcConnection()
+	clientConnection := newGrpcConnection(org1TlsCertPath, org1GatewayPeer, org1PeerEndpoint)
 
-	id := newIdentity()
-	sign := newSign()
+	id := newIdentity(org1CertPath, org1MspID)
+	sign := newSign(org1KeyPath)
 
 	// Create a Gateway connection for a specific client identity
 	gateway, err := client.Connect(
@@ -40,10 +40,10 @@ func NewLayer1ConnectionManager() *BlockchainConnection {
 }
 
 func NewLayer2ConnectionManager() *BlockchainConnection {
-	clientConnection := newGrpcConnection()
+	clientConnection := newGrpcConnection(org3TlsCertPath, org3GatewayPeer, org3PeerEndpoint)
 
-	id := newIdentity()
-	sign := newSign()
+	id := newIdentity(org3CertPath, org3MspID)
+	sign := newSign(org3KeyPath)
 
 	// Create a Gateway connection for a specific client identity
 	gateway, err := client.Connect(

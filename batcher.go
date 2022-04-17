@@ -68,7 +68,7 @@ func (batcher *Batcher) Run(transactionInfoBuffer chan TransactionInfo) {
 			batcher.currentBatch.NewStateHash = batcher.getStateHash()
 			batcher.txnLock = false
 
-			fmt.Printf("%+v\n", batcher.currentBatch)
+			batcher.commitBatch()
 
 			newPrevStateHash := batcher.currentBatch.NewStateHash
 			batcher.currentBatch = newBatch()
@@ -87,4 +87,21 @@ func (batcher *Batcher) getStateHash() []byte {
 	contract.SubmitTransaction("ReleaseStateContract")
 	batcher.txnLock = false
 	return result
+}
+
+//TODO: handle error
+func (batcher *Batcher) commitBatch() {
+	contract := batcher.layer1Connection.network.GetContract("veritas-contract")
+
+	batchInJSON, _ := json.Marshal(*(batcher.currentBatch))
+
+	fmt.Printf("batch ready for commit\n")
+	fmt.Printf("%s\n", batchInJSON)
+
+	_, err := contract.SubmitTransaction("CommitBatch", string(batchInJSON))
+	if err != nil {
+		fmt.Printf("failed to commit batch")
+	} else {
+		fmt.Printf("batch committed successfully!\n")
+	}
 }
